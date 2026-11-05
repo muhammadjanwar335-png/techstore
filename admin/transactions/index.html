@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semua Transaksi - TechStore Admin</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <div id="adminSidebarContainer"></div>
+
+    <div class="admin-main">
+        <div id="adminTopbarContainer"></div>
+
+        <main class="admin-content">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                <div>
+                    <h3 class="fw-bold mb-1"><i class="bi bi-receipt-cutoff text-primary me-2"></i>Daftar Seluruh Transaksi</h3>
+                    <p class="text-muted small mb-0">Kelola dan pantau pesanan pelanggan, ubah status pengiriman, dan kelola faktur (LocalStorage).</p>
+                </div>
+            </div>
+
+            <!-- Filter Status Bar -->
+            <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-5">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                            <input type="text" id="transSearchInput" class="form-control bg-light border-start-0" placeholder="Cari kode TRX atau nama pelanggan...">
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <select id="transStatusSelect" class="form-select form-select-sm bg-light">
+                            <option value="all">-- Semua Status Pesanan --</option>
+                            <option value="pending">Pending (Menunggu Pembayaran)</option>
+                            <option value="processing">Diproses (Siap Kirim)</option>
+                            <option value="shipped">Dikirim (Dalam Perjalanan)</option>
+                            <option value="completed">Selesai</option>
+                            <option value="cancelled">Dibatalkan</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 d-flex gap-2">
+                        <button type="button" class="btn btn-primary btn-sm flex-fill" onclick="applyTransFilters()">Filter</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetTransFilters()" title="Reset">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">No</th>
+                                <th>Kode Transaksi</th>
+                                <th>Pelanggan</th>
+                                <th>Metode Bayar</th>
+                                <th>Total Tagihan</th>
+                                <th>Status Pesanan</th>
+                                <th>Status Bayar</th>
+                                <th class="text-end" style="width: 140px;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody">
+                            <!-- Diisi otomatis oleh JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../assets/js/db.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const admin = TechDB.requireAuth('admin', '../../auth/login.html');
+    if (!admin) return;
+
+    TechDB.renderAdminSidebar('adminSidebarContainer', 'transactions', '../../');
+    TechDB.renderAdminTopbar('adminTopbarContainer', '../../');
+
+    renderTransactions();
+
+    document.getElementById('transSearchInput').addEventListener('input', applyTransFilters);
+    document.getElementById('transStatusSelect').addEventListener('change', applyTransFilters);
+});
+
+function applyTransFilters() {
+    renderTransactions();
+}
+
+function resetTransFilters() {
+    document.getElementById('transSearchInput').value = '';
+    document.getElementById('transStatusSelect').value = 'all';
+    renderTransactions();
+}
+
+function renderTransactions() {
+    const q = document.getElementById('transSearchInput').value.trim().toLowerCase();
+    const status = document.getElementById('transStatusSelect').value;
+
+    let transactions = TechDB.getTransactions();
+
+    if (status !== 'all') {
+        transactions = transactions.filter(t => t.status === status);
+    }
+
+    if (q) {
+        transactions = transactions.filter(t => 
+            (t.transactionCode || '').toLowerCase().includes(q) || 
+            (t.recipientName || '').toLowerCase().includes(q)
+        );
+    }
+
+    const tbody = document.getElementById('transactionsTableBody');
+    if (transactions.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">Tidak ada transaksi yang cocok dengan filter.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = transactions.map((tr, idx) => `
+        <tr>
+            <td>${idx + 1}</td>
+            <td>
+                <span class="fw-bold font-monospace text-dark d-block">${tr.transactionCode}</span>
+                <small class="text-muted">${TechDB.formatDate(tr.createdAt)}</small>
+            </td>
+            <td>
+                <div class="fw-bold text-dark">${tr.recipientName}</div>
+                <small class="text-muted">${tr.recipientPhone}</small>
+            </td>
+            <td>
+                <span class="badge bg-light text-dark border">${tr.paymentMethod}</span>
+            </td>
+            <td class="fw-bold text-primary">
+                ${TechDB.formatRupiah(tr.grandTotal)}
+            </td>
+            <td>${TechDB.getStatusBadge(tr.status)}</td>
+            <td>${TechDB.getPaymentBadge(tr.paymentStatus)}</td>
+            <td class="text-end">
+                <a href="detail.html?id=${tr.id}" class="btn btn-sm btn-outline-primary" title="Kelola Transaksi">
+                    <i class="bi bi-gear-fill me-1"></i>Kelola
+                </a>
+                <a href="../../invoice/index.html?code=${tr.invoiceCode}" target="_blank" class="btn btn-sm btn-light border" title="Lihat Invoice">
+                    <i class="bi bi-receipt"></i>
+                </a>
+            </td>
+        </tr>
+    `).join('');
+}
+</script>
+</body>
+</html>

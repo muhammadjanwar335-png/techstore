@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katalog Produk Komputer & Laptop - TechStore</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<div id="navbarContainer"></div>
+
+<main class="container py-4">
+    <!-- Header Banner -->
+    <div class="bg-dark text-white rounded-4 p-4 p-md-5 mb-4 position-relative overflow-hidden" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge bg-primary px-3 py-2 rounded-pill mb-2">Katalog Aksesoris & Hardware</span>
+                <h2 class="fw-bold mb-2">Semua Perlengkapan Komputer & Laptop</h2>
+                <p class="text-secondary mb-0 small">
+                    Pilih kebutuhan setup kerja dan gaming Anda dengan kualitas original serta jaminan garansi resmi.
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="text-white-50 small">Menampilkan <strong id="productCountBadge">0</strong> Produk</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Sort Bar -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+        <div class="row g-2 align-items-center">
+            <!-- Search Keyword -->
+            <div class="col-lg-4 col-md-5">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control bg-light border-start-0" placeholder="Cari nama barang...">
+                </div>
+            </div>
+
+            <!-- Kategori Dropdown -->
+            <div class="col-lg-3 col-md-3 col-6">
+                <select id="categorySelect" class="form-select form-select-sm bg-light">
+                    <option value="0">-- Semua Kategori --</option>
+                </select>
+            </div>
+
+            <!-- Sorting Dropdown -->
+            <div class="col-lg-3 col-md-3 col-6">
+                <select id="sortSelect" class="form-select form-select-sm bg-light">
+                    <option value="newest">Terbaru</option>
+                    <option value="price_asc">Harga: Terendah ke Tertinggi</option>
+                    <option value="price_desc">Harga: Tertinggi ke Terendah</option>
+                    <option value="name_asc">Nama: A - Z</option>
+                </select>
+            </div>
+
+            <!-- Action Reset -->
+            <div class="col-lg-2 col-md-1 d-flex gap-1">
+                <button type="button" class="btn btn-primary btn-sm flex-fill" onclick="applyFilters()">Filter</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetFilters()" title="Reset Filter">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Pills Quick Scroll -->
+    <div class="d-flex gap-2 overflow-x-auto pb-3 mb-4" id="categoryPills" style="white-space: nowrap;">
+        <!-- Diisi otomatis oleh JavaScript -->
+    </div>
+
+    <!-- Product Grid Container -->
+    <div class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4" id="productsGrid">
+        <!-- Diisi otomatis oleh JavaScript -->
+    </div>
+</main>
+
+<div id="footerContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/db.js"></script>
+
+<script>
+let currentCategoryFilter = 0;
+
+document.addEventListener('DOMContentLoaded', function () {
+    TechDB.renderNavbar('navbarContainer', 'catalog', '../');
+    TechDB.renderFooter('footerContainer', '../');
+
+    const categories = TechDB.getCategories();
+    const catSelect = document.getElementById('categorySelect');
+    const catPills = document.getElementById('categoryPills');
+
+    // Isi Dropdown Kategori
+    categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.id;
+        opt.textContent = cat.name;
+        catSelect.appendChild(opt);
+    });
+
+    // Ambil parameter URL awal
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q');
+    const cat = parseInt(params.get('category'));
+
+    if (q) document.getElementById('searchInput').value = q;
+    if (cat) {
+        currentCategoryFilter = cat;
+        catSelect.value = cat;
+    }
+
+    renderCategoryPills();
+    applyFilters();
+
+    // Event listener
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+    document.getElementById('categorySelect').addEventListener('change', function () {
+        currentCategoryFilter = parseInt(this.value);
+        renderCategoryPills();
+        applyFilters();
+    });
+    document.getElementById('sortSelect').addEventListener('change', applyFilters);
+});
+
+function renderCategoryPills() {
+    const categories = TechDB.getCategories();
+    const catPills = document.getElementById('categoryPills');
+
+    let html = `
+        <button type="button" class="btn btn-sm ${currentCategoryFilter === 0 ? 'btn-primary' : 'btn-light border'} rounded-pill px-3" onclick="filterByCategory(0)">
+            Semua
+        </button>
+    `;
+
+    categories.forEach(c => {
+        html += `
+            <button type="button" class="btn btn-sm ${currentCategoryFilter === c.id ? 'btn-primary' : 'btn-light border'} rounded-pill px-3" onclick="filterByCategory(${c.id})">
+                <i class="bi ${c.icon} me-1"></i>${c.name}
+            </button>
+        `;
+    });
+
+    catPills.innerHTML = html;
+}
+
+function filterByCategory(catId) {
+    currentCategoryFilter = catId;
+    document.getElementById('categorySelect').value = catId;
+    renderCategoryPills();
+    applyFilters();
+}
+
+function applyFilters() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const sort = document.getElementById('sortSelect').value;
+    let products = TechDB.getProducts().filter(p => p.status === 'active');
+
+    // Filter Kategori
+    if (currentCategoryFilter > 0) {
+        products = products.filter(p => p.categoryId === currentCategoryFilter);
+    }
+
+    // Filter Pencarian
+    if (q) {
+        products = products.filter(p => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q));
+    }
+
+    // Sorting
+    if (sort === 'price_asc') {
+        products.sort((a, b) => a.price - b.price);
+    } else if (sort === 'price_desc') {
+        products.sort((a, b) => b.price - a.price);
+    } else if (sort === 'name_asc') {
+        products.sort((a, b) => a.name.localeCompare(b.name));
+    } else {
+        products.sort((a, b) => b.id - a.id);
+    }
+
+    document.getElementById('productCountBadge').textContent = products.length;
+
+    const grid = document.getElementById('productsGrid');
+    if (products.length === 0) {
+        grid.innerHTML = `
+            <div class="col-12 w-100">
+                <div class="card border-0 shadow-sm rounded-4 p-5 text-center my-4 w-100">
+                    <div class="display-1 text-muted mb-3"><i class="bi bi-search"></i></div>
+                    <h4 class="fw-bold">Produk Tidak Ditemukan</h4>
+                    <p class="text-muted">Tidak ada aksesoris atau peripheral yang sesuai dengan kata kunci atau filter yang Anda pilih.</p>
+                    <div>
+                        <button type="button" class="btn btn-primary btn-sm px-4" onclick="resetFilters()">
+                            Lihat Semua Produk
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = products.map(prod => {
+        const cat = TechDB.getCategoryById(prod.categoryId) || {};
+        const isLowStock = prod.stock < 5;
+        const stockBadge = prod.stock <= 0 
+            ? `<span class="stock-badge bg-danger text-white">Habis</span>` 
+            : (isLowStock 
+                ? `<span class="stock-badge bg-danger text-white">Sisa ${prod.stock}!</span>` 
+                : `<span class="stock-badge bg-success text-white">Ready (${prod.stock})</span>`);
+
+        return `
+            <div class="col">
+                <div class="product-card">
+                    <div class="img-wrapper">
+                        <img src="${prod.image}" alt="${prod.name}">
+                        <span class="category-badge">${cat.name || 'Hardware'}</span>
+                        ${stockBadge}
+                    </div>
+                    <div class="card-body">
+                        <a href="../product-detail.html?id=${prod.id}" class="product-title" title="${prod.name}">
+                            ${prod.name}
+                        </a>
+                        <div class="price-tag">${TechDB.formatRupiah(prod.price)}</div>
+                        <div class="mt-auto d-grid gap-2">
+                            <a href="../product-detail.html?id=${prod.id}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye me-1"></i>Lihat Detail
+                            </a>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="handleAddToCart(${prod.id})">
+                                <i class="bi bi-cart-plus me-1"></i>+ Keranjang
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    currentCategoryFilter = 0;
+    document.getElementById('categorySelect').value = 0;
+    document.getElementById('sortSelect').value = 'newest';
+    renderCategoryPills();
+    applyFilters();
+}
+
+function handleAddToCart(productId) {
+    const res = TechDB.addToCart(productId, 1);
+    if (res.success) {
+        TechDB.renderNavbar('navbarContainer', 'catalog', '../');
+        alert('Produk berhasil ditambahkan ke keranjang belanja!');
+    } else {
+        alert(res.message);
+    }
+}
+</script>
+</body>
+</html>

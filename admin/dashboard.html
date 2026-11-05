@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - TechStore</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <div id="adminSidebarContainer"></div>
+
+    <div class="admin-main">
+        <div id="adminTopbarContainer"></div>
+
+        <main class="admin-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold mb-1">Dashboard Administrator</h3>
+                    <p class="text-muted small mb-0">Ringkasan performa penjualan, stok produk, dan aktivitas transaksi (LocalStorage Engine).</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="reports/index.html" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-file-earmark-bar-graph me-1"></i>Laporan Lengkap
+                    </a>
+                    <a href="products/create.html" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle me-1"></i>Tambah Produk
+                    </a>
+                </div>
+            </div>
+
+            <!-- Warning Alert jika ada stok menipis atau pembayaran pending -->
+            <div class="row g-3 mb-4" id="alertSection">
+                <div class="col-md-6 d-none" id="pendingPayAlertCol">
+                    <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center justify-content-between mb-0 p-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-clock-history fs-4 text-warning"></i>
+                            <div>
+                                <strong class="text-dark">Verifikasi Pembayaran!</strong>
+                                <div class="small text-muted" id="pendingPayAlertText">Terdapat pembayaran baru menunggu konfirmasi admin.</div>
+                            </div>
+                        </div>
+                        <a href="payments/index.html" class="btn btn-warning btn-sm fw-bold">Verifikasi</a>
+                    </div>
+                </div>
+
+                <div class="col-md-6 d-none" id="lowStockAlertCol">
+                    <div class="alert alert-danger border-0 shadow-sm d-flex align-items-center justify-content-between mb-0 p-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-exclamation-triangle-fill fs-4 text-danger"></i>
+                            <div>
+                                <strong class="text-dark">Peringatan Stok Menipis!</strong>
+                                <div class="small text-muted" id="lowStockAlertText">Terdapat produk dengan stok di bawah 5 unit.</div>
+                            </div>
+                        </div>
+                        <a href="products/index.html?filter=low_stock" class="btn btn-danger btn-sm fw-bold">Cek Stok</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5 Stat Cards Metrics Sesuai Spesifikasi I -->
+            <div class="row g-3 mb-4">
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="text-muted small fw-semibold text-uppercase">Total Pendapatan</div>
+                                <div class="fs-4 fw-extrabold text-primary mt-1" id="dashTotalRevenue">Rp 0</div>
+                            </div>
+                            <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                                <i class="bi bi-wallet2"></i>
+                            </div>
+                        </div>
+                        <div class="small text-success"><i class="bi bi-arrow-up-right"></i> Dari transaksi selesai</div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="text-muted small fw-semibold text-uppercase">Total Transaksi</div>
+                                <div class="fs-4 fw-extrabold text-dark mt-1" id="dashTotalTrans">0 Pesanan</div>
+                            </div>
+                            <div class="stat-icon bg-info bg-opacity-10 text-info">
+                                <i class="bi bi-receipt"></i>
+                            </div>
+                        </div>
+                        <div class="small text-muted"><a href="transactions/index.html" class="text-decoration-none">Kelola transaksi &rarr;</a></div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="text-muted small fw-semibold text-uppercase">Total Produk</div>
+                                <div class="fs-4 fw-extrabold text-dark mt-1" id="dashTotalProd">0 Barang</div>
+                            </div>
+                            <div class="stat-icon bg-success bg-opacity-10 text-success">
+                                <i class="bi bi-box-seam"></i>
+                            </div>
+                        </div>
+                        <div class="small text-muted"><a href="products/index.html" class="text-decoration-none">Katalog barang &rarr;</a></div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="text-muted small fw-semibold text-uppercase">Pelanggan Terdaftar</div>
+                                <div class="fs-4 fw-extrabold text-dark mt-1" id="dashTotalCust">0 Akun</div>
+                            </div>
+                            <div class="stat-icon bg-secondary bg-opacity-10 text-secondary">
+                                <i class="bi bi-people"></i>
+                            </div>
+                        </div>
+                        <div class="small text-muted"><a href="customers/index.html" class="text-decoration-none">Data pelanggan &rarr;</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian Grafik Visualisasi Menggunakan Chart.js -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0"><i class="bi bi-graph-up text-primary me-2"></i>Tren Penjualan (7 Hari Terakhir)</h5>
+                            <span class="badge bg-light text-muted border">Minggu Ini</span>
+                        </div>
+                        <div style="height: 280px; position: relative;">
+                            <canvas id="salesTrendsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart text-primary me-2"></i>Produk per Kategori</h5>
+                        <div style="height: 280px; position: relative;" class="d-flex align-items-center justify-content-center">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaksi Terbaru & Produk Terlaris -->
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Transaksi Terbaru</h5>
+                            <a href="transactions/index.html" class="btn btn-outline-primary btn-sm">Semua Transaksi</a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-custom align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Kode Transaksi</th>
+                                        <th>Pelanggan</th>
+                                        <th>Total Tagihan</th>
+                                        <th>Status Order</th>
+                                        <th>Pembayaran</th>
+                                        <th class="text-end">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentTransTableBody">
+                                    <!-- Diisi otomatis oleh JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-header bg-white border-bottom p-3">
+                            <h5 class="fw-bold mb-0"><i class="bi bi-trophy text-warning me-2"></i>Top 5 Produk Terlaris</h5>
+                        </div>
+                        <div class="p-3" id="topProductsContainer">
+                            <!-- Diisi otomatis oleh JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/db.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const admin = TechDB.requireAuth('admin', '../auth/login.html');
+    if (!admin) return;
+
+    TechDB.renderAdminSidebar('adminSidebarContainer', 'dashboard', '../');
+    TechDB.renderAdminTopbar('adminTopbarContainer', '../');
+
+    const products = TechDB.getProducts();
+    const categories = TechDB.getCategories();
+    const users = JSON.parse(localStorage.getItem(TechDB.KEYS.USERS) || '[]');
+    const customers = users.filter(u => u.role === 'customer');
+    const transactions = TechDB.getTransactions();
+
+    // Metrik
+    const completedTrans = transactions.filter(t => t.status === 'completed');
+    const totalRev = completedTrans.reduce((sum, t) => sum + t.grandTotal, 0);
+    const lowStock = products.filter(p => p.stock < 5);
+    const pendingPayments = transactions.filter(t => t.paymentStatus === 'pending');
+
+    document.getElementById('dashTotalRevenue').textContent = TechDB.formatRupiah(totalRev);
+    document.getElementById('dashTotalTrans').textContent = `${transactions.length} Pesanan`;
+    document.getElementById('dashTotalProd').textContent = `${products.length} Barang`;
+    document.getElementById('dashTotalCust').textContent = `${customers.length} Akun`;
+
+    // Alerts
+    if (pendingPayments.length > 0) {
+        document.getElementById('pendingPayAlertCol').classList.remove('d-none');
+        document.getElementById('pendingPayAlertText').textContent = `Terdapat ${pendingPayments.length} pembayaran baru menunggu verifikasi admin.`;
+    }
+    if (lowStock.length > 0) {
+        document.getElementById('lowStockAlertCol').classList.remove('d-none');
+        document.getElementById('lowStockAlertText').textContent = `Terdapat ${lowStock.length} produk dengan stok di bawah 5 unit.`;
+    }
+
+    // Chart 1: 7 Hari Terakhir
+    const daysLabels = [];
+    const daysData = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().slice(0, 10);
+        daysLabels.push(d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
+
+        const dayTotal = transactions
+            .filter(t => (t.createdAt || '').startsWith(dateStr) && t.status !== 'cancelled')
+            .reduce((sum, t) => sum + t.grandTotal, 0);
+        daysData.push(dayTotal);
+    }
+
+    const ctxSales = document.getElementById('salesTrendsChart').getContext('2d');
+    new Chart(ctxSales, {
+        type: 'line',
+        data: {
+            labels: daysLabels,
+            datasets: [{
+                label: 'Pendapatan (Rp)',
+                data: daysData,
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                fill: true,
+                tension: 0.35,
+                borderWidth: 3,
+                pointBackgroundColor: '#2563eb',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: val => 'Rp ' + (val / 1000).toLocaleString('id-ID') + 'k'
+                    }
+                }
+            }
+        }
+    });
+
+    // Chart 2: Komposisi Kategori
+    const catLabels = categories.map(c => c.name);
+    const catData = categories.map(c => products.filter(p => p.categoryId === c.id).length);
+
+    const ctxCat = document.getElementById('categoryChart').getContext('2d');
+    new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+            labels: catLabels,
+            datasets: [{
+                data: catData,
+                backgroundColor: [
+                    '#2563eb', '#06b6d4', '#10b981', '#f59e0b',
+                    '#8b5cf6', '#ec4899', '#64748b', '#3b82f6'
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
+            }
+        }
+    });
+
+    // 5 Transaksi Terbaru
+    const tbody = document.getElementById('recentTransTableBody');
+    const recent = transactions.slice(0, 5);
+    tbody.innerHTML = recent.map(rt => `
+        <tr>
+            <td class="fw-bold font-monospace">${rt.transactionCode}</td>
+            <td>
+                <div class="fw-semibold text-dark">${rt.recipientName}</div>
+                <small class="text-muted">${TechDB.formatDate(rt.createdAt)}</small>
+            </td>
+            <td class="fw-bold text-primary">${TechDB.formatRupiah(rt.grandTotal)}</td>
+            <td>${TechDB.getStatusBadge(rt.status)}</td>
+            <td>${TechDB.getPaymentBadge(rt.paymentStatus)}</td>
+            <td class="text-end">
+                <a href="transactions/detail.html?id=${rt.id}" class="btn btn-light border btn-sm" title="Kelola">
+                    <i class="bi bi-gear-fill"></i>
+                </a>
+            </td>
+        </tr>
+    `).join('');
+
+    // Top 5 Produk Terlaris
+    const salesMap = {};
+    transactions.filter(t => t.status !== 'cancelled').forEach(t => {
+        (t.items || []).forEach(it => {
+            salesMap[it.productId] = (salesMap[it.productId] || 0) + it.quantity;
+        });
+    });
+
+    const sortedProducts = [...products].sort((a, b) => (salesMap[b.id] || 0) - (salesMap[a.id] || 0)).slice(0, 5);
+    const topContainer = document.getElementById('topProductsContainer');
+    topContainer.innerHTML = sortedProducts.map((tp, idx) => {
+        const cat = TechDB.getCategoryById(tp.categoryId) || {};
+        return `
+            <div class="d-flex align-items-center gap-3 py-2 ${idx > 0 ? 'border-top' : ''}">
+                <span class="badge bg-light text-dark border rounded-circle" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">${idx + 1}</span>
+                <img src="${tp.image}" alt="${tp.name}" class="rounded-3 border" style="width: 44px; height: 44px; object-fit: cover;">
+                <div class="flex-grow-1 text-truncate">
+                    <div class="fw-bold text-dark text-truncate small">${tp.name}</div>
+                    <div class="text-muted" style="font-size: 0.72rem;">${cat.name || 'Hardware'}</div>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-primary-subtle text-primary fw-bold">${salesMap[tp.id] || 0} terjual</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+});
+</script>
+</body>
+</html>

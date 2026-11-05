@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Penjualan - TechStore Admin</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    
+    <style>
+        @media print {
+            .no-print, #adminSidebarContainer, #adminTopbarContainer { display: none !important; }
+            .admin-main, .admin-content { padding: 0 !important; background: #fff !important; }
+            .card { border: none !important; box-shadow: none !important; }
+            body { background: #fff !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <div id="adminSidebarContainer"></div>
+
+    <div class="admin-main">
+        <div id="adminTopbarContainer"></div>
+
+        <main class="admin-content">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3 no-print">
+                <div>
+                    <h3 class="fw-bold mb-1"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Laporan Penjualan</h3>
+                    <p class="text-muted small mb-0">Analisis pendapatan, jumlah produk terjual, dan tren penjualan aktual dari LocalStorage.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-success btn-sm" onclick="exportToExcelCSV()">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Export Excel (CSV)
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
+                        <i class="bi bi-printer me-1"></i>Cetak Laporan (PDF)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kop Cetak untuk Hasil Print -->
+            <div class="d-none d-print-block text-center border-bottom pb-3 mb-4">
+                <h3 class="fw-bold mb-0">TECHSTORE INDONESIA</h3>
+                <h5 class="fw-bold mb-1">LAPORAN PENJUALAN PERIPHERAL & ACCESSORIES KOMPUTER</h5>
+                <div class="small">Gedung Cyber Tech Lt. 5, Jl. Rasuna Said No. 45, Jakarta Selatan | Telp: (021) 555-8989</div>
+                <div class="small fw-bold mt-2" id="printReportPeriodLabel">Periode: -</div>
+            </div>
+
+            <!-- Filter Periode Bar Sesuai Ketentuan H -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 no-print">
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label small fw-semibold text-secondary">Preset Periode Waktu</label>
+                        <select id="reportPresetSelect" class="form-select" onchange="handlePresetChange(this.value)">
+                            <option value="today">Hari Ini</option>
+                            <option value="week">7 Hari Terakhir (Mingguan)</option>
+                            <option value="month" selected>Bulan Ini</option>
+                            <option value="custom">Kustom Rentang Tanggal</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-3 col-md-3">
+                        <label class="form-label small fw-semibold text-secondary">Tanggal Mulai</label>
+                        <input type="date" id="reportStartDate" class="form-control">
+                    </div>
+
+                    <div class="col-lg-3 col-md-3">
+                        <label class="form-label small fw-semibold text-secondary">Tanggal Selesai</label>
+                        <input type="date" id="reportEndDate" class="form-control">
+                    </div>
+
+                    <div class="col-lg-3 col-md-12 d-flex gap-2">
+                        <button type="button" class="btn btn-primary flex-fill fw-bold" onclick="applyReportFilter()">
+                            <i class="bi bi-filter me-1"></i>Filter Laporan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Metrik Summary Cards Sesuai Spesifikasi H -->
+            <div class="row g-3 mb-4">
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="text-muted small fw-semibold text-uppercase">Total Pendapatan</div>
+                                <div class="fs-4 fw-extrabold text-primary mt-1" id="repTotalRevenue">Rp 0</div>
+                            </div>
+                            <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                                <i class="bi bi-currency-dollar"></i>
+                            </div>
+                        </div>
+                        <small class="text-muted" id="repPeriodSubtitle">-</small>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="text-muted small fw-semibold text-uppercase">Total Transaksi</div>
+                                <div class="fs-4 fw-extrabold text-dark mt-1" id="repTotalOrders">0 Pesanan</div>
+                            </div>
+                            <div class="stat-icon bg-info bg-opacity-10 text-info">
+                                <i class="bi bi-receipt"></i>
+                            </div>
+                        </div>
+                        <small class="text-muted">Pesanan aktif (non-cancel)</small>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="text-muted small fw-semibold text-uppercase">Produk Terjual</div>
+                                <div class="fs-4 fw-extrabold text-dark mt-1" id="repTotalItemsSold">0 Unit</div>
+                            </div>
+                            <div class="stat-icon bg-success bg-opacity-10 text-success">
+                                <i class="bi bi-box-seam"></i>
+                            </div>
+                        </div>
+                        <small class="text-muted">Total kuantitas barang keluar</small>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="text-muted small fw-semibold text-uppercase">Rata-Rata Order (AOV)</div>
+                                <div class="fs-4 fw-extrabold text-dark mt-1" id="repAvgOrder">Rp 0</div>
+                            </div>
+                            <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                                <i class="bi bi-calculator"></i>
+                            </div>
+                        </div>
+                        <small class="text-muted">Average Order Value</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grafik & Produk Terlaris Periode Ini -->
+            <div class="row g-4 mb-4 no-print">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart-line text-primary me-2"></i>Grafik Penjualan Harian</h5>
+                        <div style="height: 280px; position: relative;">
+                            <canvas id="reportBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-trophy text-warning me-2"></i>Produk Paling Laris</h5>
+                        <div class="d-flex flex-column gap-3" id="repTopProductsList">
+                            <!-- Diisi otomatis oleh JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Riwayat Penjualan Rinci -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-table text-primary me-2"></i>Tabel Transaksi Penjualan</h5>
+                    <span class="text-muted small" id="repTableCountLabel">0 Transaksi</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">No</th>
+                                <th>Kode Transaksi</th>
+                                <th>Tanggal</th>
+                                <th>Pelanggan</th>
+                                <th>Metode Bayar</th>
+                                <th>Total Penjualan</th>
+                                <th>Status Pesanan</th>
+                                <th>Status Bayar</th>
+                                <th class="text-end no-print" style="width: 80px;">Invoice</th>
+                            </tr>
+                        </thead>
+                        <tbody id="repTableBody">
+                            <!-- Diisi otomatis oleh JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Kolom Tanda Tangan Cetak -->
+            <div class="d-none d-print-block row pt-5 mt-4">
+                <div class="col-8">
+                    <div class="small text-muted">
+                        <em>Dicetak otomatis melalui Sistem Informasi TechStore (LocalStorage Edition)</em>
+                    </div>
+                </div>
+                <div class="col-4 text-center">
+                    <div class="small">Jakarta, <span id="printDateStamp"></span></div>
+                    <div class="small mb-5">Mengetahui,<br><strong>Manager Operasional TechStore</strong></div>
+                    <div class="border-top pt-1 fw-bold d-inline-block px-4">
+                        Administrator TechStore
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../assets/js/db.js"></script>
+
+<script>
+let reportChartInstance = null;
+let filteredReportTransactions = [];
+
+document.addEventListener('DOMContentLoaded', function () {
+    const admin = TechDB.requireAuth('admin', '../../auth/login.html');
+    if (!admin) return;
+
+    TechDB.renderAdminSidebar('adminSidebarContainer', 'reports', '../../');
+    TechDB.renderAdminTopbar('adminTopbarContainer', '../../');
+
+    // Default bulan ini
+    handlePresetChange('month');
+});
+
+function handlePresetChange(val) {
+    const today = new Date();
+    const startInput = document.getElementById('reportStartDate');
+    const endInput = document.getElementById('reportEndDate');
+
+    if (val === 'today') {
+        const todayStr = today.toISOString().slice(0, 10);
+        startInput.value = todayStr;
+        endInput.value = todayStr;
+    } else if (val === 'week') {
+        const weekAgo = new Date();
+        weekAgo.setDate(today.getDate() - 6);
+        startInput.value = weekAgo.toISOString().slice(0, 10);
+        endInput.value = today.toISOString().slice(0, 10);
+    } else if (val === 'month') {
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        startInput.value = firstDay.toISOString().slice(0, 10);
+        endInput.value = lastDay.toISOString().slice(0, 10);
+    }
+
+    applyReportFilter();
+}
+
+function applyReportFilter() {
+    const startDate = document.getElementById('reportStartDate').value;
+    const endDate = document.getElementById('reportEndDate').value;
+
+    const allTrans = TechDB.getTransactions();
+    filteredReportTransactions = allTrans.filter(t => {
+        const tDate = (t.createdAt || '').slice(0, 10);
+        return tDate >= startDate && tDate <= endDate;
+    });
+
+    const activeTrans = filteredReportTransactions.filter(t => t.status !== 'cancelled');
+    const totalRev = activeTrans.reduce((sum, t) => sum + t.grandTotal, 0);
+    let totalItems = 0;
+    activeTrans.forEach(t => {
+        (t.items || []).forEach(it => { totalItems += it.quantity; });
+    });
+    const avgOrder = activeTrans.length > 0 ? (totalRev / activeTrans.length) : 0;
+
+    // Render Metrics
+    document.getElementById('repTotalRevenue').textContent = TechDB.formatRupiah(totalRev);
+    document.getElementById('repTotalOrders').textContent = `${activeTrans.length} Pesanan`;
+    document.getElementById('repTotalItemsSold').textContent = `${totalItems} Unit`;
+    document.getElementById('repAvgOrder').textContent = TechDB.formatRupiah(avgOrder);
+    document.getElementById('repPeriodSubtitle').textContent = `Periode: ${startDate} s/d ${endDate}`;
+    document.getElementById('printReportPeriodLabel').textContent = `Periode: ${startDate} s/d ${endDate}`;
+    document.getElementById('printDateStamp').textContent = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('repTableCountLabel').textContent = `Menampilkan ${filteredReportTransactions.length} Transaksi`;
+
+    // Render Table
+    const tbody = document.getElementById('repTableBody');
+    if (filteredReportTransactions.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">Tidak ada transaksi pada periode ini.</td></tr>`;
+    } else {
+        tbody.innerHTML = filteredReportTransactions.map((row, idx) => `
+            <tr>
+                <td>${idx + 1}</td>
+                <td><span class="fw-bold font-monospace text-dark">${row.transactionCode}</span></td>
+                <td>${TechDB.formatDate(row.createdAt)}</td>
+                <td>
+                    <div class="fw-bold text-dark">${row.recipientName}</div>
+                    <small class="text-muted">${row.recipientPhone}</small>
+                </td>
+                <td><span class="badge bg-light text-dark border">${row.paymentMethod}</span></td>
+                <td class="fw-bold text-primary">${TechDB.formatRupiah(row.grandTotal)}</td>
+                <td>${TechDB.getStatusBadge(row.status)}</td>
+                <td>${TechDB.getPaymentBadge(row.paymentStatus)}</td>
+                <td class="text-end no-print">
+                    <a href="../../invoice/index.html?code=${row.invoiceCode}" target="_blank" class="btn btn-sm btn-outline-dark" title="Cetak Invoice">
+                        <i class="bi bi-printer"></i>
+                    </a>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Top Selling Products
+    const salesMap = {};
+    activeTrans.forEach(t => {
+        (t.items || []).forEach(it => {
+            if (!salesMap[it.productName]) {
+                salesMap[it.productName] = { name: it.productName, sold: 0, revenue: 0 };
+            }
+            salesMap[it.productName].sold += it.quantity;
+            salesMap[it.productName].revenue += it.subtotal;
+        });
+    });
+
+    const topList = Object.values(salesMap).sort((a, b) => b.sold - a.sold).slice(0, 5);
+    const topContainer = document.getElementById('repTopProductsList');
+    if (topList.length === 0) {
+        topContainer.innerHTML = `<div class="text-muted text-center py-4 small">Belum ada produk terjual pada periode ini.</div>`;
+    } else {
+        topContainer.innerHTML = topList.map((tp, idx) => `
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                <div class="text-truncate me-2" style="max-width: 200px;">
+                    <div class="fw-bold small text-dark text-truncate">${idx + 1}. ${tp.name}</div>
+                    <div class="text-muted" style="font-size: 0.72rem;">${TechDB.formatRupiah(tp.revenue)}</div>
+                </div>
+                <span class="badge bg-primary rounded-pill">${tp.sold} terjual</span>
+            </div>
+        `).join('');
+    }
+
+    // Chart.js Bar Chart
+    const dailyMap = {};
+    activeTrans.forEach(t => {
+        const d = (t.createdAt || '').slice(0, 10);
+        dailyMap[d] = (dailyMap[d] || 0) + t.grandTotal;
+    });
+
+    const sortedDates = Object.keys(dailyMap).sort();
+    const chartLabels = sortedDates.map(d => {
+        const parts = d.split('-');
+        return `${parts[2]}/${parts[1]}`;
+    });
+    const chartValues = sortedDates.map(d => dailyMap[d]);
+
+    const ctx = document.getElementById('reportBarChart').getContext('2d');
+    if (reportChartInstance) {
+        reportChartInstance.destroy();
+    }
+
+    reportChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartLabels.length > 0 ? chartLabels : ['Tidak ada data'],
+            datasets: [{
+                label: 'Pendapatan (Rp)',
+                data: chartValues.length > 0 ? chartValues : [0],
+                backgroundColor: 'rgba(37, 99, 235, 0.75)',
+                borderColor: '#2563eb',
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { callback: val => 'Rp ' + (val / 1000).toLocaleString('id-ID') + 'k' }
+                }
+            }
+        }
+    });
+}
+
+function exportToExcelCSV() {
+    if (filteredReportTransactions.length === 0) {
+        alert('Tidak ada data untuk diekspor!');
+        return;
+    }
+
+    const startDate = document.getElementById('reportStartDate').value;
+    const endDate = document.getElementById('reportEndDate').value;
+
+    let csvContent = "\uFEFF"; // UTF-8 BOM
+    csvContent += "LAPORAN PENJUALAN TECHSTORE (LOCALSTORAGE)\n";
+    csvContent += `Periode:,${startDate} s/d ${endDate}\n`;
+    csvContent += `Tanggal Export:,${new Date().toLocaleString('id-ID')}\n\n`;
+
+    csvContent += "No,Kode Transaksi,Tanggal,Nama Pelanggan,No Telepon,Kurir,Metode Pembayaran,Subtotal,Ongkir,Grand Total,Status Pesanan,Status Pembayaran\n";
+
+    filteredReportTransactions.forEach((t, idx) => {
+        const row = [
+            idx + 1,
+            `"${t.transactionCode}"`,
+            `"${t.createdAt}"`,
+            `"${t.recipientName.replace(/"/g, '""')}"`,
+            `"${t.recipientPhone}"`,
+            `"${t.shippingCourier}"`,
+            `"${t.paymentMethod}"`,
+            t.totalAmount,
+            t.shippingCost,
+            t.grandTotal,
+            t.status.toUpperCase(),
+            t.paymentStatus.toUpperCase()
+        ];
+        csvContent += row.join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Laporan_Penjualan_TechStore_${startDate}_${endDate}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+</body>
+</html>

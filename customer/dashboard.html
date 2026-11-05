@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Pelanggan - TechStore</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<div id="navbarContainer"></div>
+
+<main class="container py-4">
+    <!-- Welcome Header -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge bg-primary px-3 py-2 rounded-pill mb-2">Akun Pelanggan Terdaftar</span>
+                <h2 class="fw-bold mb-2">Selamat Datang, <span id="dashUserName">Pelanggan</span>!</h2>
+                <p class="text-secondary mb-0 small">
+                    Kelola riwayat belanja, lacak ekspedisi pengiriman, dan nikmati berbagai promo aksesoris komputer eksklusif.
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="products.html" class="btn btn-primary px-4 py-2 fw-semibold">
+                    <i class="bi bi-cart3 me-2"></i>Mulai Belanja
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Cards Pelanggan -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-3 fs-3">
+                        <i class="bi bi-bag-check"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Total Pesanan</div>
+                        <div class="fs-4 fw-bold text-dark" id="statTotalOrders">0 Transaksi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-3 fs-3">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Pesanan Berjalan</div>
+                        <div class="fs-4 fw-bold text-dark" id="statActiveOrders">0 Pesanan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-success bg-opacity-10 text-success p-3 rounded-3 fs-3">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Total Pembelian Sukses</div>
+                        <div class="fs-4 fw-bold text-dark" id="statTotalSpent">Rp 0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-receipt text-primary me-2"></i>Pesanan Terakhir Anda</h5>
+            <a href="history.html" class="text-primary small fw-semibold">
+                Lihat Seluruh Riwayat &rarr;
+            </a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-custom align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Kode Transaksi</th>
+                        <th>Tanggal</th>
+                        <th>Total Bayar</th>
+                        <th>Metode</th>
+                        <th>Status Pesanan</th>
+                        <th>Pembayaran</th>
+                        <th class="text-end">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="recentOrdersTableBody">
+                    <!-- Diisi otomatis oleh JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<div id="footerContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/db.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const user = TechDB.requireAuth('customer', '../auth/login.html');
+    if (!user) return;
+
+    TechDB.renderNavbar('navbarContainer', '', '../');
+    TechDB.renderFooter('footerContainer', '../');
+
+    document.getElementById('dashUserName').textContent = user.name;
+
+    const allOrders = TechDB.getTransactions(user.id);
+    const activeOrders = allOrders.filter(t => ['pending', 'processing', 'shipped'].includes(t.status));
+    const completedOrders = allOrders.filter(t => t.status === 'completed');
+    const totalSpent = completedOrders.reduce((sum, t) => sum + t.grandTotal, 0);
+
+    document.getElementById('statTotalOrders').textContent = `${allOrders.length} Transaksi`;
+    document.getElementById('statActiveOrders').textContent = `${activeOrders.length} Pesanan`;
+    document.getElementById('statTotalSpent').textContent = TechDB.formatRupiah(totalSpent);
+
+    const tbody = document.getElementById('recentOrdersTableBody');
+    const recent = allOrders.slice(0, 5);
+
+    if (recent.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada transaksi. Silakan belanja di katalog kami!</td></tr>`;
+    } else {
+        tbody.innerHTML = recent.map(ro => `
+            <tr>
+                <td class="fw-bold font-monospace">${ro.transactionCode}</td>
+                <td>${TechDB.formatDate(ro.createdAt)}</td>
+                <td class="fw-bold text-primary">${TechDB.formatRupiah(ro.grandTotal)}</td>
+                <td><span class="badge bg-light text-dark border">${ro.paymentMethod}</span></td>
+                <td>${TechDB.getStatusBadge(ro.status)}</td>
+                <td>${TechDB.getPaymentBadge(ro.paymentStatus)}</td>
+                <td class="text-end">
+                    <a href="order-detail.html?code=${ro.transactionCode}" class="btn btn-outline-primary btn-sm">Detail</a>
+                </td>
+            </tr>
+        `).join('');
+    }
+});
+</script>
+</body>
+</html>

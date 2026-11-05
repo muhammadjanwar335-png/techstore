@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Penjualan - TechStore</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <style>
+        body {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            padding: 30px 15px;
+        }
+        .invoice-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        .invoice-stamp-paid {
+            border: 3px solid #16a34a;
+            color: #16a34a;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 1.15rem;
+            padding: 6px 16px;
+            display: inline-block;
+            border-radius: 8px;
+            transform: rotate(-6deg);
+            letter-spacing: 0.1em;
+        }
+        .invoice-stamp-unpaid {
+            border: 3px solid #ca8a04;
+            color: #ca8a04;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 1.15rem;
+            padding: 6px 16px;
+            display: inline-block;
+            border-radius: 8px;
+            transform: rotate(-6deg);
+            letter-spacing: 0.1em;
+        }
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                padding: 0 !important;
+            }
+            .invoice-card {
+                box-shadow: none !important;
+                padding: 20px !important;
+                max-width: 100% !important;
+                border: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Action Bar (Tidak Dicetak) -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 no-print mx-auto" style="max-width: 860px;">
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">
+                <i class="bi bi-arrow-left me-1"></i>Kembali
+            </button>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-primary btn-sm px-3">
+                <i class="bi bi-printer-fill me-1"></i>Cetak Invoice (A4)
+            </button>
+            <a href="#" id="viewStrukLink" target="_blank" class="btn btn-outline-dark btn-sm px-3">
+                <i class="bi bi-receipt me-1"></i>Cetak Struk Kasir
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Invoice Paper Document -->
+    <div class="invoice-card" id="invoiceArea">
+        <!-- Header: Logo Toko & Nomor Invoice -->
+        <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <i class="bi bi-cpu-fill text-primary fs-2"></i>
+                    <h3 class="fw-bold mb-0 text-dark">TECH<span class="text-primary">STORE</span></h3>
+                </div>
+                <div class="text-secondary small leading-tight">
+                    <strong>PT TechStore Indonesia</strong><br>
+                    Gedung Cyber Tech Lt. 5, Jl. Rasuna Said No. 45<br>
+                    Jakarta Selatan, DKI Jakarta 12950<br>
+                    Telp: (021) 555-8989 | Email: billing@techstore.com
+                </div>
+            </div>
+
+            <div class="text-end">
+                <h4 class="fw-bold text-primary mb-1">INVOICE PENJUALAN</h4>
+                <div class="font-monospace fw-bold text-dark fs-5" id="invCode">-</div>
+                <div class="text-muted small">No. Transaksi: <span id="invTrxCode">-</span></div>
+                <div class="mt-2" id="invStampArea"></div>
+            </div>
+        </div>
+
+        <!-- Info Penerima & Tanggal Transaksi -->
+        <div class="row mb-4">
+            <div class="col-6">
+                <div class="text-uppercase text-secondary fw-bold small mb-1">Ditagihkan Kepada (Customer):</div>
+                <h6 class="fw-bold mb-1 text-dark" id="invRecipientName">-</h6>
+                <div class="text-secondary small mb-1">No. HP: <span id="invRecipientPhone">-</span></div>
+                <div class="text-muted small leading-snug" style="max-width: 320px;" id="invShippingAddress">-</div>
+            </div>
+
+            <div class="col-6 text-end">
+                <div class="text-uppercase text-secondary fw-bold small mb-1">Detail Pembayaran:</div>
+                <div class="small mb-1"><strong>Tanggal Terbit:</strong> <span id="invDate">-</span></div>
+                <div class="small mb-1"><strong>Metode Bayar:</strong> <span id="invPaymentMethod">-</span></div>
+                <div class="small mb-1"><strong>Kurir Pengiriman:</strong> <span id="invCourier">-</span></div>
+            </div>
+        </div>
+
+        <!-- Tabel Barang -->
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light text-secondary small text-uppercase">
+                    <tr>
+                        <th style="width: 40px;" class="text-center">No</th>
+                        <th>Deskripsi Barang / Accessories</th>
+                        <th class="text-center" style="width: 100px;">Jumlah</th>
+                        <th class="text-end" style="width: 150px;">Harga Satuan</th>
+                        <th class="text-end" style="width: 160px;">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="invItemsTableBody">
+                    <!-- Diisi otomatis oleh JavaScript -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-end fw-semibold">Subtotal Produk:</td>
+                        <td class="text-end fw-bold" id="invSubtotal">Rp 0</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="text-end fw-semibold" id="invShippingLabel">Ongkos Kirim:</td>
+                        <td class="text-end fw-bold" id="invShippingCost">Rp 0</td>
+                    </tr>
+                    <tr class="table-light">
+                        <td colspan="4" class="text-end fw-extrabold fs-6">TOTAL TAGIHAN:</td>
+                        <td class="text-end fw-extrabold text-primary fs-5" id="invGrandTotal">Rp 0</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Footer Invoice & Catatan -->
+        <div class="row align-items-end pt-3">
+            <div class="col-8">
+                <div class="border rounded p-3 bg-light small text-secondary">
+                    <strong>Syarat & Ketentuan:</strong><br>
+                    1. Invoice ini adalah bukti transaksi yang sah dan diterbitkan secara elektronik oleh sistem TechStore.<br>
+                    2. Seluruh produk bergaransi resmi distributor selama 1 tahun terhitung sejak tanggal faktur.<br>
+                    3. Simpan invoice ini jika sewaktu-waktu membutuhkan klaim garansi produk.
+                </div>
+            </div>
+            <div class="col-4 text-center">
+                <div class="small text-secondary mb-5">Hormat Kami,<br><strong>TechStore Indonesia</strong></div>
+                <div class="fw-bold text-dark border-top pt-2 d-inline-block px-4">Authorized Signature</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../assets/js/db.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(window.location.search);
+    const invoiceCode = params.get('code');
+
+    if (!invoiceCode) {
+        alert('Kode invoice tidak ditemukan!');
+        window.location.href = '../index.html';
+        return;
+    }
+
+    const order = TechDB.getInvoiceByCode(invoiceCode);
+    if (!order) {
+        alert('Data transaksi invoice tidak ditemukan!');
+        window.location.href = '../index.html';
+        return;
+    }
+
+    document.title = `Invoice ${order.invoiceCode} - TechStore`;
+    document.getElementById('invCode').textContent = order.invoiceCode;
+    document.getElementById('invTrxCode').textContent = order.transactionCode;
+    document.getElementById('viewStrukLink').href = `struk.html?code=${order.invoiceCode}`;
+
+    const isPaid = order.paymentStatus === 'paid';
+    document.getElementById('invStampArea').innerHTML = isPaid 
+        ? `<div class="invoice-stamp-paid"><i class="bi bi-check-circle me-1"></i>LUNAS / PAID</div>` 
+        : `<div class="invoice-stamp-unpaid"><i class="bi bi-hourglass-split me-1"></i>UNPAID</div>`;
+
+    document.getElementById('invRecipientName').textContent = order.recipientName;
+    document.getElementById('invRecipientPhone').textContent = order.recipientPhone;
+    document.getElementById('invShippingAddress').textContent = order.shippingAddress;
+    document.getElementById('invDate').textContent = TechDB.formatDate(order.createdAt);
+    document.getElementById('invPaymentMethod').textContent = order.paymentMethod;
+    document.getElementById('invCourier').textContent = order.shippingCourier;
+
+    const tbody = document.getElementById('invItemsTableBody');
+    tbody.innerHTML = (order.items || []).map((it, idx) => `
+        <tr>
+            <td class="text-center">${idx + 1}</td>
+            <td><strong class="text-dark">${it.productName}</strong></td>
+            <td class="text-center">${it.quantity} unit</td>
+            <td class="text-end">${TechDB.formatRupiah(it.price)}</td>
+            <td class="text-end fw-bold text-dark">${TechDB.formatRupiah(it.subtotal)}</td>
+        </tr>
+    `).join('');
+
+    document.getElementById('invSubtotal').textContent = TechDB.formatRupiah(order.totalAmount);
+    document.getElementById('invShippingLabel').textContent = `Ongkos Kirim (${order.shippingCourier}):`;
+    document.getElementById('invShippingCost').textContent = TechDB.formatRupiah(order.shippingCost);
+    document.getElementById('invGrandTotal').textContent = TechDB.formatRupiah(order.grandTotal);
+});
+</script>
+</body>
+</html>

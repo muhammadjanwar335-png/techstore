@@ -1,0 +1,502 @@
+/* ============================================================
+   TECHSTORE - Modern Tech Store CSS Theme
+   Palette: Navy Blue (#0f172a, #1e293b), Blue (#2563eb, #3b82f6)
+   ============================================================ */
+
+:root {
+  --tech-navy-dark: #090d16;
+  --tech-navy: #0f172a;
+  --tech-navy-light: #1e293b;
+  --tech-navy-muted: #334155;
+  --tech-blue-primary: #2563eb;
+  --tech-blue-hover: #1d4ed8;
+  --tech-blue-light: #eff6ff;
+  --tech-cyan-accent: #06b6d4;
+  --tech-bg: #f8fafc;
+  --tech-border: #e2e8f0;
+  --tech-card-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
+  --tech-card-hover: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--tech-bg);
+  color: #1e293b;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+/* Typography & Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--tech-navy);
+  letter-spacing: -0.02em;
+}
+
+a {
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Navbar Customer */
+.navbar-tech {
+  background-color: var(--tech-navy);
+  border-bottom: 2px solid #1e293b;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.navbar-brand-tech {
+  font-weight: 800;
+  font-size: 1.45rem;
+  letter-spacing: -0.03em;
+  color: #ffffff !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-brand-tech span {
+  color: #38bdf8;
+}
+
+.nav-tech-link {
+  color: #cbd5e1 !important;
+  font-weight: 500;
+  padding: 8px 14px !important;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.nav-tech-link:hover, .nav-tech-link.active {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Badges */
+.badge-cart-count {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  font-size: 0.7rem;
+  padding: 3px 6px;
+  border-radius: 9999px;
+  background-color: #ef4444;
+  color: #ffffff;
+  border: 2px solid var(--tech-navy);
+}
+
+/* Hero Section */
+.hero-tech {
+  background: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e293b 100%);
+  color: #ffffff;
+  padding: 80px 0 90px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-tech::before {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, rgba(37, 99, 235, 0) 70%);
+  top: -100px;
+  right: -50px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Product Card */
+.product-card {
+  background: #ffffff;
+  border: 1px solid var(--tech-border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--tech-card-shadow);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--tech-card-hover);
+  border-color: #cbd5e1;
+}
+
+.product-card .img-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 75%; /* 4:3 Aspect Ratio */
+  overflow: hidden;
+  background-color: #f1f5f9;
+}
+
+.product-card .img-wrapper img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.product-card:hover .img-wrapper img {
+  transform: scale(1.06);
+}
+
+.product-card .category-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(4px);
+  color: #f8fafc;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.product-card .stock-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.product-card .card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.product-card .product-title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--tech-navy);
+  margin-bottom: 8px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 2.7em;
+}
+
+.product-card .product-title:hover {
+  color: var(--tech-blue-primary);
+}
+
+.product-card .price-tag {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--tech-blue-primary);
+  margin-bottom: 14px;
+}
+
+/* Category Card */
+.category-card {
+  background: #ffffff;
+  border: 1px solid var(--tech-border);
+  border-radius: 14px;
+  padding: 20px 16px;
+  text-align: center;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  display: block;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--tech-blue-primary);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.1);
+  background-color: var(--tech-blue-light);
+}
+
+.category-icon {
+  width: 56px;
+  height: 56px;
+  background-color: #f1f5f9;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: var(--tech-blue-primary);
+  margin-bottom: 12px;
+  transition: all 0.25s ease;
+}
+
+.category-card:hover .category-icon {
+  background-color: var(--tech-blue-primary);
+  color: #ffffff;
+}
+
+/* Admin Dashboard Layout */
+.admin-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  width: 270px;
+  background-color: var(--tech-navy);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  border-right: 1px solid #1e293b;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.admin-sidebar-header {
+  padding: 24px 20px;
+  border-bottom: 1px solid #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-sidebar-menu {
+  list-style: none;
+  padding: 16px 12px;
+  margin: 0;
+}
+
+.admin-menu-header {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 12px 14px 6px;
+}
+
+.admin-menu-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  color: #94a3b8;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.92rem;
+  margin-bottom: 4px;
+  transition: all 0.2s ease;
+}
+
+.admin-menu-link:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.admin-menu-link.active {
+  color: #ffffff;
+  background-color: var(--tech-blue-primary);
+  font-weight: 600;
+}
+
+.admin-menu-link i {
+  font-size: 1.2rem;
+}
+
+.admin-main {
+  flex: 1;
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-topbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--tech-border);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+
+.admin-content {
+  padding: 28px;
+  flex: 1;
+}
+
+/* Stat Cards */
+.stat-card {
+  background: #ffffff;
+  border: 1px solid var(--tech-border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--tech-blue-primary);
+  border-color: var(--tech-blue-primary);
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 9px 18px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--tech-blue-hover);
+  border-color: var(--tech-blue-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.btn-navy {
+  background-color: var(--tech-navy);
+  border-color: var(--tech-navy);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 9px 18px;
+}
+
+.btn-navy:hover {
+  background-color: var(--tech-navy-light);
+  border-color: var(--tech-navy-light);
+  color: #ffffff;
+}
+
+/* Table styling */
+.table-custom {
+  background-color: #ffffff;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--tech-border);
+}
+
+.table-custom thead th {
+  background-color: #f8fafc;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--tech-border);
+}
+
+.table-custom tbody td {
+  padding: 16px 18px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--tech-border);
+  font-size: 0.92rem;
+}
+
+.table-custom tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+/* Footer Customer */
+.footer-tech {
+  background-color: var(--tech-navy-dark);
+  color: #94a3b8;
+  padding: 60px 0 30px;
+  border-top: 1px solid #1e293b;
+  font-size: 0.92rem;
+}
+
+.footer-tech h5 {
+  color: #ffffff;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.footer-tech a {
+  color: #94a3b8;
+}
+
+.footer-tech a:hover {
+  color: #38bdf8;
+}
+
+/* Print Stylesheet (Invoice A4 & POS Thermal Struk) */
+@media print {
+  /* Sembunyikan elemen navigasi saat mencetak */
+  .no-print,
+  .admin-sidebar,
+  .admin-topbar,
+  .navbar,
+  .footer-tech,
+  .btn,
+  .alert,
+  header,
+  footer {
+    display: none !important;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  .admin-main, .container, .card {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .print-container {
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 15px !important;
+  }
+
+  /* Thermal Receipt Mode (Struk Kasir 80mm/58mm) */
+  .thermal-receipt {
+    width: 80mm !important;
+    max-width: 80mm !important;
+    margin: 0 auto !important;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 9pt !important;
+  }
+
+  .table-custom thead th {
+    background-color: #eee !important;
+    color: #000 !important;
+  }
+}

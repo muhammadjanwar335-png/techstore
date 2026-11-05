@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Struk Kasir - TechStore</title>
+    <style>
+        @page {
+            size: 80mm auto;
+            margin: 0;
+        }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            width: 78mm;
+            margin: 0 auto;
+            padding: 15px 10px;
+            color: #000;
+            font-size: 11px;
+            background: #fff;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-left { text-align: left; }
+        .fw-bold { font-weight: bold; }
+        .divider {
+            border-top: 1px dashed #000;
+            margin: 8px 0;
+        }
+        .divider-double {
+            border-top: 2px solid #000;
+            margin: 8px 0;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .no-print {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .btn-print {
+            background: #0f172a;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print">
+    <button class="btn-print" onclick="window.print()">Cetak Struk Kasir</button>
+</div>
+
+<div class="text-center">
+    <div class="fw-bold" style="font-size: 16px;">TECHSTORE</div>
+    <div>SISTEM INFORMASI PERIPHERAL & ACC</div>
+    <div>Jl. Rasuna Said No. 45, Jakarta</div>
+    <div>Telp: (021) 555-8989</div>
+</div>
+
+<div class="divider"></div>
+
+<div class="item-row">
+    <span>No. TRX:</span>
+    <span class="fw-bold" id="strukTrxCode">-</span>
+</div>
+<div class="item-row">
+    <span>Invoice:</span>
+    <span id="strukInvCode">-</span>
+</div>
+<div class="item-row">
+    <span>Tanggal:</span>
+    <span id="strukDate">-</span>
+</div>
+<div class="item-row">
+    <span>Pelanggan:</span>
+    <span id="strukCustomer">-</span>
+</div>
+<div class="item-row">
+    <span>Metode:</span>
+    <span id="strukMethod">-</span>
+</div>
+
+<div class="divider"></div>
+
+<div class="fw-bold item-row">
+    <span>PRODUK</span>
+    <span>TOTAL</span>
+</div>
+
+<div class="divider"></div>
+
+<div id="strukItemsContainer">
+    <!-- Diisi otomatis oleh JavaScript -->
+</div>
+
+<div class="divider"></div>
+
+<div class="item-row">
+    <span>Subtotal:</span>
+    <span id="strukSubtotal">Rp 0</span>
+</div>
+<div class="item-row">
+    <span id="strukCourier">Ongkir:</span>
+    <span id="strukShipping">Rp 0</span>
+</div>
+
+<div class="divider-double"></div>
+
+<div class="item-row fw-bold" style="font-size: 13px;">
+    <span>TOTAL:</span>
+    <span id="strukGrandTotal">Rp 0</span>
+</div>
+
+<div class="item-row" style="margin-top: 4px;">
+    <span>STATUS:</span>
+    <span class="fw-bold" id="strukPaymentStatus">LUNAS</span>
+</div>
+
+<div class="divider"></div>
+
+<div class="text-center" style="margin-top: 15px; font-size: 10px;">
+    <div>TERIMA KASIH TELAH BERBELANJA</div>
+    <div>DI TECHSTORE INDONESIA</div>
+    <div>Barang yang dibeli bergaransi 1 thn</div>
+    <div>www.techstore.com</div>
+</div>
+
+<script src="../assets/js/db.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(window.location.search);
+    const invoiceCode = params.get('code');
+
+    if (!invoiceCode) {
+        alert('Kode struk tidak ditemukan!');
+        return;
+    }
+
+    const order = TechDB.getInvoiceByCode(invoiceCode);
+    if (!order) {
+        alert('Data transaksi tidak ditemukan!');
+        return;
+    }
+
+    document.getElementById('strukTrxCode').textContent = order.transactionCode;
+    document.getElementById('strukInvCode').textContent = order.invoiceCode;
+    document.getElementById('strukDate').textContent = TechDB.formatDate(order.createdAt, true);
+    document.getElementById('strukCustomer').textContent = (order.recipientName || '').substring(0, 18);
+    document.getElementById('strukMethod').textContent = order.paymentMethod;
+
+    const itemsContainer = document.getElementById('strukItemsContainer');
+    itemsContainer.innerHTML = (order.items || []).map(it => `
+        <div style="margin-bottom: 6px;">
+            <div class="fw-bold">${it.productName}</div>
+            <div class="item-row" style="color: #333;">
+                <span>${it.quantity} x ${TechDB.formatRupiah(it.price)}</span>
+                <span>${TechDB.formatRupiah(it.subtotal)}</span>
+            </div>
+        </div>
+    `).join('');
+
+    document.getElementById('strukSubtotal').textContent = TechDB.formatRupiah(order.totalAmount);
+    document.getElementById('strukCourier').textContent = `Ongkir (${order.shippingCourier}):`;
+    document.getElementById('strukShipping').textContent = TechDB.formatRupiah(order.shippingCost);
+    document.getElementById('strukGrandTotal').textContent = TechDB.formatRupiah(order.grandTotal);
+    document.getElementById('strukPaymentStatus').textContent = (order.paymentStatus || '').toUpperCase() === 'PAID' ? 'LUNAS (PAID)' : 'BELUM LUNAS';
+});
+</script>
+</body>
+</html>

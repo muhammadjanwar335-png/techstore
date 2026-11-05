@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk ke Akun - TechStore</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #090d16 0%, #0f172a 60%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-card {
+            background: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+            max-width: 950px;
+            width: 100%;
+        }
+        .auth-banner {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            padding: 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+        .auth-banner::before {
+            content: '';
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.3) 0%, rgba(37, 99, 235, 0) 70%);
+            bottom: -50px;
+            right: -50px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-card">
+    <div class="row g-0">
+        <!-- Kolom Kiri: Branding & Tombol Akun Demo -->
+        <div class="col-lg-5 auth-banner d-none d-lg-flex">
+            <div>
+                <a href="../index.html" class="navbar-brand-tech text-white fs-3 mb-4 d-inline-block">
+                    <i class="bi bi-cpu-fill text-primary"></i> TECH<span class="text-primary">STORE</span>
+                </a>
+                <h4 class="fw-bold text-white mb-2">Sistem Informasi E-Commerce Tanpa Database</h4>
+                <p class="text-secondary small leading-relaxed">
+                    Aplikasi penjualan client-side berbasis <strong>LocalStorage</strong>. Seluruh proses transaksi, grafik analitik, dan inventaris berjalan mandiri tanpa server MySQL/XAMPP.
+                </p>
+            </div>
+
+            <!-- Box Demo Login Cepat untuk Presentasi Dosen -->
+            <div class="bg-dark bg-opacity-50 p-3 rounded-4 border border-secondary border-opacity-50 mt-4">
+                <div class="d-flex align-items-center gap-2 text-warning fw-bold small mb-2">
+                    <i class="bi bi-lightning-charge-fill"></i> AKUN DEMO PRESENTASI
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-info text-start d-flex justify-content-between align-items-center" onclick="fillDemo('admin@techstore.com', 'admin123')">
+                        <span><i class="bi bi-shield-check me-1"></i> <strong>Admin</strong> (admin123)</span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-light text-start d-flex justify-content-between align-items-center" onclick="fillDemo('customer@techstore.com', 'customer123')">
+                        <span><i class="bi bi-person me-1"></i> <strong>Customer</strong> (customer123)</span>
+                        <i class="bi bi-arrow-right-short"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-secondary small mt-4">
+                &copy; TechStore Inc. LocalStorage Edition.
+            </div>
+        </div>
+
+        <!-- Kolom Kanan: Form Login -->
+        <div class="col-lg-7 p-4 p-md-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold mb-1">Masuk ke Akun</h3>
+                    <p class="text-muted small mb-0">Silakan masukkan email dan kata sandi Anda</p>
+                </div>
+                <a href="../index.html" class="btn btn-sm btn-light border text-secondary" title="Kembali ke Beranda">
+                    <i class="bi bi-house-door-fill"></i>
+                </a>
+            </div>
+
+            <!-- Demo buttons untuk tampilan mobile -->
+            <div class="d-lg-none mb-3 p-3 bg-light rounded-3 border">
+                <div class="small fw-bold text-muted mb-2"><i class="bi bi-lightning-charge-fill text-warning"></i> Akun Demo:</div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary flex-fill" onclick="fillDemo('admin@techstore.com', 'admin123')">Admin</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" onclick="fillDemo('customer@techstore.com', 'customer123')">Customer</button>
+                </div>
+            </div>
+
+            <div id="loginAlert" class="alert alert-danger d-none align-items-center small py-2 mb-3">
+                <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+                <span id="loginAlertText">Email atau kata sandi salah.</span>
+            </div>
+
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small text-secondary">Alamat Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
+                        <input type="email" id="emailInput" class="form-control bg-light border-start-0" placeholder="nama@email.com" required autofocus>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold small text-secondary mb-1">Kata Sandi</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-lock"></i></span>
+                        <input type="password" id="passwordInput" class="form-control bg-light border-start-0 border-end-0" placeholder="••••••••" required>
+                        <button class="btn btn-light border border-start-0 text-muted" type="button" onclick="togglePassword()">
+                            <i class="bi bi-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Masuk Sekarang
+                </button>
+            </form>
+
+            <div class="mt-4 text-center small text-muted">
+                Belum memiliki akun TechStore? <a href="register.html" class="fw-bold text-primary">Daftar Akun Baru</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/db.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const user = TechDB.getCurrentUser();
+    if (user) {
+        if (user.role === 'admin') {
+            window.location.href = '../admin/dashboard.html';
+        } else {
+            window.location.href = '../index.html';
+        }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const email = document.getElementById('emailInput').value;
+        const password = document.getElementById('passwordInput').value;
+
+        const res = TechDB.login(email, password);
+        if (res.success) {
+            if (res.user.role === 'admin') {
+                window.location.href = '../admin/dashboard.html';
+            } else {
+                window.location.href = '../index.html';
+            }
+        } else {
+            const alertBox = document.getElementById('loginAlert');
+            document.getElementById('loginAlertText').textContent = res.message;
+            alertBox.classList.remove('d-none');
+            alertBox.classList.add('d-flex');
+        }
+    });
+});
+
+function fillDemo(email, pass) {
+    document.getElementById('emailInput').value = email;
+    document.getElementById('passwordInput').value = pass;
+    document.getElementById('loginAlert').classList.add('d-none');
+}
+
+function togglePassword() {
+    const input = document.getElementById('passwordInput');
+    const icon = document.getElementById('eyeIcon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('bi-eye', 'bi-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('bi-eye-slash', 'bi-eye');
+    }
+}
+</script>
+</body>
+</html>
